@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED(IDC_CONNECT_BTN, &CMFCchatClientDlg::OnBnClickedConnectBtn)
 END_MESSAGE_MAP()
 
 
@@ -153,3 +154,10 @@ HCURSOR CMFCchatClientDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CMFCchatClientDlg::OnBnClickedConnectBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	TRACE("[chat]测试");
+}
