@@ -59,6 +59,8 @@ CMFCchatClientDlg::CMFCchatClientDlg(CWnd* pParent /*=nullptr*/)
 void CMFCchatClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_BEFOREMSG_LIST, m_list);
+	DDX_Control(pDX, IDC_SENDMSG_EDIT, m_input);
 }
 
 BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
@@ -101,6 +103,18 @@ BOOL CMFCchatClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+
+	//初始化端口控件为62023,并且设置风格为只能输入数字
+	HWND hEdit = GetDlgItem(IDC_PORT_EDIT)->GetSafeHwnd(); //得到句柄
+
+	//得到Edit控件当前的风格
+	LONG sytle = GetWindowLong(hEdit, GWL_STYLE);
+
+	//在之前的风格上加入新的风格
+	SetWindowLong(hEdit, GWL_STYLE, sytle | ES_NUMBER);
+
+	//GetDlgItem(IDC_PORT_EDIT)->SetWindowText(_T("2023"));
+
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -159,5 +173,35 @@ HCURSOR CMFCchatClientDlg::OnQueryDragIcon()
 void CMFCchatClientDlg::OnBnClickedConnectBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	TRACE("[chat]测试");
+	
+	//获取控件里面的IP以及端口
+	CString strPort, strIP;
+	GetDlgItem(IDC_PORT_EDIT)->GetWindowText(strPort);
+	GetDlgItem(IDC_IPADDRESS)->GetWindowText(strIP);
+
+	//CString 转char*
+	USES_CONVERSION;
+	LPCSTR szPort = (LPCSTR)T2A(strPort);
+	LPCSTR szIP = (LPCSTR)T2A(strIP);
+
+	//端口号是否占用了系统端口
+	int iPort = atoi(szPort);
+	if (iPort <= 1024) {
+		MessageBox(_T("端口号必须大于1024"));
+		return;
+	}
+
+	//打印调试
+	TRACE("[chat]--szPort = %s szIP = %s", szPort, szIP);
+
+	//分配一个套接字内存
+	if (m_client != NULL) {
+		m_client = new CMySocket;
+	}
+
+	//创建套接字
+	m_client->Create(iPort, SOCK_STREAM);
+
+	//链接服务器
+	m_client->Connect(strIP, iPort);
 }

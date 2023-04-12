@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "CMySocket.h"
 
 
 // CMFCchatClientDlg 对话框
@@ -33,4 +34,10 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedConnectBtn();
+protected:
+	CMySocket* m_client = NULL;
+public:
+	CListBox m_list;
+	CTime m_time;
+	CEdit m_input;
 };

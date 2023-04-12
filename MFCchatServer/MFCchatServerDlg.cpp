@@ -159,6 +159,23 @@ HCURSOR CMFCchatServerDlg::OnQueryDragIcon()
 void CMFCchatServerDlg::OnBnClickedStartBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	TRACE("[chat]Connect btn");
-	MessageBox(_T("Connect btn"));
+
+	//获取控件内容：端口
+	CString strPort;
+	GetDlgItem(IDC_PORT_EDIT)->GetWindowText(strPort);
+
+	//CSstring转char*
+	USES_CONVERSION;
+	LPCSTR szPort = (LPCSTR)T2A(strPort);
+
+	//判断端口是否占用了系统端口
+	int iPort = atoi(szPort);
+	if (iPort <= 1024) {
+		MessageBox(_T("端口号必须大于1024"));
+		return;
+	}
+
+	//打印调试
+	TRACE("服务器启动--->端口：%s",szPort);
+
 }
