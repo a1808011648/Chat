@@ -17,20 +17,15 @@ void CMySocket::OnConnect(int nErrorCode)
 	//得到主窗口
 	CMFCchatClientDlg* dlg = (CMFCchatClientDlg*)AfxGetApp()->GetMainWnd();
 
-	//得到时间
-	CString str;
-	dlg->m_time = CTime::GetCurrentTime();
-	str = dlg->m_time.Format("%X ");
 	
 	//判断是否链接成功
 	if (nErrorCode != 0) {
-		str += _T("连接服务器失败");
-		dlg->m_list.AddString(str);
-		
+		dlg->updataListBox(_T("连接服务器失败"), _T(""));
+		dlg->m_isConnect = false;
 	}
 	else {
-		str += _T("连接服务器成功");
-		dlg->m_list.AddString(str);
+		dlg->updataListBox(_T("连接服务器成功"), _T(""));
+		dlg->m_isConnect = true;
 	}
 	
 	CAsyncSocket::OnConnect(nErrorCode);
@@ -38,6 +33,19 @@ void CMySocket::OnConnect(int nErrorCode)
 
 void CMySocket::OnReceive(int nErrorCode)
 {
+	CMFCchatClientDlg* dlg = (CMFCchatClientDlg*)AfxGetApp()->GetMainWnd();
+
+	//接收数据
+	char szRecvBuf[200] = { 0 };
+	Receive(szRecvBuf, 200);
+
+	//数据类型转换
+	USES_CONVERSION;
+	CString strRecvMsg = A2W(szRecvBuf);
+
+	//显示到界面
+	//显示到界面
+	dlg->updataListBox(strRecvMsg, _T("服务器："));
 }
 
 void CMySocket::OnSend(int nErrorCode)

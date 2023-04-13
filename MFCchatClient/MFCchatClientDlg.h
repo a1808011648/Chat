@@ -40,4 +40,7 @@ public:
 	CListBox m_list;
 	CTime m_time;
 	CEdit m_input;
+	BOOL m_isConnect = false;
+	afx_msg void OnBnClickedSendBtn();
+	int updataListBox(const CString& strSendMsg, const CString& strNameUser);
 };

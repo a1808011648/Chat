@@ -3,8 +3,8 @@
 //
 
 #pragma once
-
-
+#include "CServerSocket.h"
+#include "CChatSocket.h"
 // CMFCchatServerDlg 对话框
 class CMFCchatServerDlg : public CDialogEx
 {
@@ -33,4 +33,15 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedStartBtn();
+protected:
+	
+	
+public:
+	CListBox m_list;
+	CTime m_time;
+	CChatSocket* m_chat = NULL;
+	CServerSocket* m_server = NULL;
+	BOOL m_startServer =false;
+	afx_msg void OnBnClickedSendBtn();
+	int updataListBox(const CString& strSendMsg, const CString& strNameUser);
 };

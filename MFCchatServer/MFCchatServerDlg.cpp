@@ -59,6 +59,7 @@ CMFCchatServerDlg::CMFCchatServerDlg(CWnd* pParent /*=nullptr*/)
 void CMFCchatServerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_MSG_LIST, m_list);
 }
 
 BEGIN_MESSAGE_MAP(CMFCchatServerDlg, CDialogEx)
@@ -66,6 +67,7 @@ BEGIN_MESSAGE_MAP(CMFCchatServerDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_START_BTN, &CMFCchatServerDlg::OnBnClickedStartBtn)
+	ON_BN_CLICKED(IDC_SEND_BTN, &CMFCchatServerDlg::OnBnClickedSendBtn)
 END_MESSAGE_MAP()
 
 
@@ -101,7 +103,7 @@ BOOL CMFCchatServerDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
-
+	GetDlgItem(IDC_PORT_EDIT)->SetWindowText(_T("5038"));
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -160,6 +162,11 @@ void CMFCchatServerDlg::OnBnClickedStartBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
 
+	if (m_startServer) {
+		return;
+	}
+
+
 	//获取控件内容：端口
 	CString strPort;
 	GetDlgItem(IDC_PORT_EDIT)->GetWindowText(strPort);
@@ -170,12 +177,82 @@ void CMFCchatServerDlg::OnBnClickedStartBtn()
 
 	//判断端口是否占用了系统端口
 	int iPort = atoi(szPort);
-	if (iPort <= 1024) {
-		MessageBox(_T("端口号必须大于1024"));
+	if (iPort <= 1024 || iPort > 65535) {
+		MessageBox(_T("端口号必须大于1024小于65535"));
 		return;
 	}
 
-	//打印调试
-	TRACE("服务器启动--->端口：%s",szPort);
 
+	//准备服务器套接字
+	if (m_server == NULL) {
+		m_server = new CServerSocket;
+	}
+
+	//创建服务器套接字
+	if (!m_server->Create(iPort)) {
+
+		TRACE("m_server Create error: %d", GetLastError());
+		return;
+	}
+	else {
+		TRACE("m_server Create Success");
+	}
+
+	//开启监听
+	if (!m_server->Listen()) {
+		TRACE("m_server Listen error: %d", GetLastError());
+		return;
+	}
+	else {
+		TRACE("m_server Listen Success");
+	}
+
+	CString str;
+	m_time = CTime::GetCurrentTime();
+	str = m_time.Format("%X ");
+	str += _T("服务器启动成功...");
+	m_list.AddString(str);
+
+	m_startServer = true;
+	
+
+}
+
+
+void CMFCchatServerDlg::OnBnClickedSendBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (m_startServer == false) {
+		MessageBox(_T("服务器还未启动"), _T("提示:"), MB_ICONINFORMATION);
+		return;
+	}
+
+	if (m_chat == NULL) {
+		MessageBox(_T("没有客户端连接"), _T("提示:"), MB_ICONINFORMATION);
+		return;
+	}
+	CString strTmpMsg;
+	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowText(strTmpMsg);
+	USES_CONVERSION;
+	char* szSendBuf = (char*)T2A(strTmpMsg);
+
+	m_chat->Send(szSendBuf, 200);
+	TRACE("m_server Send error:%d", GetLastError());
+
+	//数据更新到界面
+	updataListBox(strTmpMsg, _T("服务器："));
+}
+
+int CMFCchatServerDlg::updataListBox(const CString& strSendMsg, const CString& strNameUser)
+{
+	// TODO: 在此处添加实现代码.
+
+	//数据更新到界面
+	m_time = CTime::GetCurrentTime();
+	CString strShow = m_time.Format("%X ");
+	strShow += strNameUser + strSendMsg;
+	m_list.AddString(strShow);
+	GetDlgItem(IDC_SENDMSG_EDIT)->SetWindowText(_T(""));
+	GetDlgItem(IDC_SENDMSG_EDIT)->SetFocus();
+	return 0;
 }

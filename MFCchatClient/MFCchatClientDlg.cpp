@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_CONNECT_BTN, &CMFCchatClientDlg::OnBnClickedConnectBtn)
+	ON_BN_CLICKED(IDC_SEND_BTN, &CMFCchatClientDlg::OnBnClickedSendBtn)
 END_MESSAGE_MAP()
 
 
@@ -113,8 +114,8 @@ BOOL CMFCchatClientDlg::OnInitDialog()
 	//在之前的风格上加入新的风格
 	SetWindowLong(hEdit, GWL_STYLE, sytle | ES_NUMBER);
 
-	//GetDlgItem(IDC_PORT_EDIT)->SetWindowText(_T("2023"));
-
+	GetDlgItem(IDC_PORT_EDIT)->SetWindowText(_T("5038"));
+	GetDlgItem(IDC_IPADDRESS)->SetWindowText(_T("127.0.0.1"));
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -174,6 +175,11 @@ void CMFCchatClientDlg::OnBnClickedConnectBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	
+	//关闭之前的连接
+	if (m_isConnect) {
+		return;
+	}
+
 	//获取控件里面的IP以及端口
 	CString strPort, strIP;
 	GetDlgItem(IDC_PORT_EDIT)->GetWindowText(strPort);
@@ -186,8 +192,8 @@ void CMFCchatClientDlg::OnBnClickedConnectBtn()
 
 	//端口号是否占用了系统端口
 	int iPort = atoi(szPort);
-	if (iPort <= 1024) {
-		MessageBox(_T("端口号必须大于1024"));
+	if (iPort <= 1024 || iPort > 65535) {
+		MessageBox(_T("端口号必须大于1024小于65535"));
 		return;
 	}
 
@@ -195,13 +201,71 @@ void CMFCchatClientDlg::OnBnClickedConnectBtn()
 	TRACE("[chat]--szPort = %s szIP = %s", szPort, szIP);
 
 	//分配一个套接字内存
-	if (m_client != NULL) {
+	if (m_client == NULL) {
 		m_client = new CMySocket;
+		//创建套接字
+		if (!m_client->Create()) {
+
+			TRACE("m_client Create error: %d", GetLastError());
+		}
+		else {
+			TRACE("m_client Create Success");
+		}
+
 	}
 
-	//创建套接字
-	m_client->Create(iPort, SOCK_STREAM);
+	
 
 	//链接服务器
-	m_client->Connect(strIP, iPort);
+	if (m_client->Connect(strIP, iPort) == SOCKET_ERROR) {
+		TRACE("m_client Connect error:%d", GetLastError());
+		return;
+	}
+
+	
+}
+
+
+void CMFCchatClientDlg::OnBnClickedSendBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	//判断是否连接上了服务器
+	if (m_isConnect == false) {
+		MessageBox(_T("没有与服务器连接，无法发送！"),_T("提示:"), MB_ICONINFORMATION);
+		return;
+	}
+	//获取发送控件的内容
+	CString strTmpMsg;
+	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowText(strTmpMsg);
+
+	//转换为char*
+	USES_CONVERSION;
+	char* szSendBuf = (char*)T2A(strTmpMsg);
+
+	//发送数据
+	m_client->Send(szSendBuf, 200);
+
+	/*CString strTmpMsg;
+	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowText(strTmpMsg);
+
+	m_client->Send(strTmpMsg.GetBuffer(), strTmpMsg.GetLength());*/
+	
+	//更新界面
+	updataListBox(strTmpMsg, _T("我："));
+
+}
+
+
+int CMFCchatClientDlg::updataListBox(const CString& strSendMsg,const CString& strNameUser)
+{
+	// TODO: 在此处添加实现代码.
+
+	//数据更新到界面
+	m_time = CTime::GetCurrentTime();
+	CString strShow = m_time.Format("%X ");
+	strShow += strNameUser + strSendMsg;
+	m_list.AddString(strShow);
+	GetDlgItem(IDC_SENDMSG_EDIT)->SetWindowText(_T(""));
+	GetDlgItem(IDC_SENDMSG_EDIT)->SetFocus();
+	return 0;
 }
