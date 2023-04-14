@@ -43,4 +43,10 @@ public:
 	BOOL m_isConnect = false;
 	afx_msg void OnBnClickedSendBtn();
 	int updataListBox(const CString& strSendMsg, const CString& strNameUser);
+	afx_msg void OnBnClickedSavenameBtn();
+	CString m_name;
+	int autoSendMsg();
+	CButton m_autoSendRadio;
+	afx_msg void OnBnClickedAutosendRadio();
+	afx_msg void OnBnClickedClearmsgBtn();
 };

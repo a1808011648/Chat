@@ -36,8 +36,8 @@ void CMySocket::OnReceive(int nErrorCode)
 	CMFCchatClientDlg* dlg = (CMFCchatClientDlg*)AfxGetApp()->GetMainWnd();
 
 	//接收数据
-	char szRecvBuf[200] = { 0 };
-	Receive(szRecvBuf, 200);
+	char szRecvBuf[SEND_MAX_BUF] = { 0 };
+	Receive(szRecvBuf, SEND_MAX_BUF);
 
 	//数据类型转换
 	USES_CONVERSION;
@@ -46,6 +46,9 @@ void CMySocket::OnReceive(int nErrorCode)
 	//显示到界面
 	//显示到界面
 	dlg->updataListBox(strRecvMsg, _T("服务器："));
+
+	//自动回复
+	dlg->autoSendMsg();
 }
 
 void CMySocket::OnSend(int nErrorCode)

@@ -61,6 +61,7 @@ void CMFCchatClientDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_BEFOREMSG_LIST, m_list);
 	DDX_Control(pDX, IDC_SENDMSG_EDIT, m_input);
+	DDX_Control(pDX, IDC_AUTOSEND_RADIO, m_autoSendRadio);
 }
 
 BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
@@ -69,6 +70,9 @@ BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_CONNECT_BTN, &CMFCchatClientDlg::OnBnClickedConnectBtn)
 	ON_BN_CLICKED(IDC_SEND_BTN, &CMFCchatClientDlg::OnBnClickedSendBtn)
+	ON_BN_CLICKED(IDC_SAVENAME_BTN, &CMFCchatClientDlg::OnBnClickedSavenameBtn)
+	ON_BN_CLICKED(IDC_AUTOSEND_RADIO, &CMFCchatClientDlg::OnBnClickedAutosendRadio)
+	ON_BN_CLICKED(IDC_CLEARMSG_BTN, &CMFCchatClientDlg::OnBnClickedClearmsgBtn)
 END_MESSAGE_MAP()
 
 
@@ -116,6 +120,27 @@ BOOL CMFCchatClientDlg::OnInitDialog()
 
 	GetDlgItem(IDC_PORT_EDIT)->SetWindowText(_T("5038"));
 	GetDlgItem(IDC_IPADDRESS)->SetWindowText(_T("127.0.0.1"));
+
+	//获取当前目录路径
+	WCHAR wSzPath[MAX_PATH] = { 0 };
+	GetCurrentDirectory(MAX_PATH, wSzPath);
+
+	//设置即将读取的文件名以及路径
+	CString strFilePath;
+	strFilePath.Format(_T("%ls//Test.ini"), wSzPath);
+	CString strName;
+	TCHAR wSzName[256] = {_T("客户端")};
+	if (GetPrivateProfileString(_T("CLIENT"), _T("NAME"), NULL, wSzName, 256, strFilePath) <= 0) {
+		m_name = _T("客户端：");
+		SetDlgItemText(IDC_NAME_EDIT, _T("客户端"));
+	}
+	else {
+		m_name.Format(_T("%s："), wSzName);
+		SetDlgItemText(IDC_NAME_EDIT, wSzName);
+	}
+
+		
+	
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -240,10 +265,10 @@ void CMFCchatClientDlg::OnBnClickedSendBtn()
 
 	//转换为char*
 	USES_CONVERSION;
-	char* szSendBuf = (char*)T2A(strTmpMsg);
+	char* szSendBuf = (char*)T2A((m_name + strTmpMsg));
 
 	//发送数据
-	m_client->Send(szSendBuf, 200);
+	m_client->Send(szSendBuf, SEND_MAX_BUF);
 
 	/*CString strTmpMsg;
 	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowText(strTmpMsg);
@@ -251,7 +276,7 @@ void CMFCchatClientDlg::OnBnClickedSendBtn()
 	m_client->Send(strTmpMsg.GetBuffer(), strTmpMsg.GetLength());*/
 	
 	//更新界面
-	updataListBox(strTmpMsg, _T("我："));
+	updataListBox(strTmpMsg, m_name);
 
 }
 
@@ -268,4 +293,94 @@ int CMFCchatClientDlg::updataListBox(const CString& strSendMsg,const CString& st
 	GetDlgItem(IDC_SENDMSG_EDIT)->SetWindowText(_T(""));
 	GetDlgItem(IDC_SENDMSG_EDIT)->SetFocus();
 	return 0;
+}
+
+
+void CMFCchatClientDlg::OnBnClickedSavenameBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (IDCANCEL == AfxMessageBox(_T("是否要修改名称吗？"), MB_OKCANCEL)) {
+		return;
+	}
+
+	
+	//得到昵称控件中的内容
+	CString strName;
+	GetDlgItemText(IDC_NAME_EDIT, strName);
+
+	//判断昵称是否为空
+	if (strName.GetLength() <= 0) {
+		MessageBox(_T("昵称不能为空！"), _T("提示："), MB_ICONINFORMATION);
+		return;
+	}
+
+	//获取路径，写入配置文件，保存昵称
+	//获取当前路径
+	TCHAR wSzPath[MAX_PATH] = { 0 };
+	GetCurrentDirectory(MAX_PATH, wSzPath);
+	TRACE("#####wSzPath = %ls", wSzPath);
+
+
+	//设置文件名字和路径
+	CString strFilePath;
+	strFilePath.Format(_T("%ls//Test.ini"), wSzPath);
+
+	//保存到配置文件
+	if (WritePrivateProfileString(_T("CLIENT"), _T("NAME"), strName, strFilePath) != 0) {
+		MessageBox(_T("保存成功！"), _T("提示："), MB_ICONINFORMATION);
+		m_name = strName + _T("：");
+	}
+	else {
+		MessageBox(_T("保存失败！"), _T("提示："), MB_ICONWARNING);
+	}
+	
+
+
+}
+
+//自动回复消息
+int CMFCchatClientDlg::autoSendMsg()
+{
+	// TODO: 在此处添加实现代码.
+
+	//自动回复是否开启
+	if (m_autoSendRadio.GetCheck() == false) {
+	
+		return -1;
+	}
+	//获取自动回复的内容
+	CString strAutoMsg;
+	GetDlgItemText(IDC_AUTOMSG_EDIT, strAutoMsg);
+
+	//如果为空 返回
+	if (strAutoMsg.GetLength() <= 0) {
+		return -1;
+	}
+	USES_CONVERSION;
+	char* szAutoBuf = (char*)T2A((m_name + strAutoMsg));
+	m_client->Send(szAutoBuf, SEND_MAX_BUF);
+
+	//更新界面
+	updataListBox(strAutoMsg, m_name);
+
+	return 0;
+}
+
+
+void CMFCchatClientDlg::OnBnClickedAutosendRadio()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (m_autoSendRadio.GetCheck()) {
+		m_autoSendRadio.SetCheck(false);
+	}
+	else {
+		m_autoSendRadio.SetCheck(true);
+	}
+}
+
+
+void CMFCchatClientDlg::OnBnClickedClearmsgBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_list.ResetContent();
 }

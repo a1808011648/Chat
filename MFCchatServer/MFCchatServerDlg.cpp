@@ -68,6 +68,7 @@ BEGIN_MESSAGE_MAP(CMFCchatServerDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_START_BTN, &CMFCchatServerDlg::OnBnClickedStartBtn)
 	ON_BN_CLICKED(IDC_SEND_BTN, &CMFCchatServerDlg::OnBnClickedSendBtn)
+	ON_BN_CLICKED(IDC_CLEARMSG_BTN, &CMFCchatServerDlg::OnBnClickedClearmsgBtn)
 END_MESSAGE_MAP()
 
 
@@ -236,7 +237,7 @@ void CMFCchatServerDlg::OnBnClickedSendBtn()
 	USES_CONVERSION;
 	char* szSendBuf = (char*)T2A(strTmpMsg);
 
-	m_chat->Send(szSendBuf, 200);
+	m_chat->Send(szSendBuf, SEND_MAX_BUF);
 	TRACE("m_server Send error:%d", GetLastError());
 
 	//数据更新到界面
@@ -255,4 +256,11 @@ int CMFCchatServerDlg::updataListBox(const CString& strSendMsg, const CString& s
 	GetDlgItem(IDC_SENDMSG_EDIT)->SetWindowText(_T(""));
 	GetDlgItem(IDC_SENDMSG_EDIT)->SetFocus();
 	return 0;
+}
+
+
+void CMFCchatServerDlg::OnBnClickedClearmsgBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	m_list.ResetContent();
 }

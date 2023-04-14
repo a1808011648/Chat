@@ -6,6 +6,7 @@
 #include "CServerSocket.h"
 #include "CChatSocket.h"
 // CMFCchatServerDlg 对话框
+#define SEND_MAX_BUF 1024
 class CMFCchatServerDlg : public CDialogEx
 {
 // 构造
@@ -44,4 +45,5 @@ public:
 	BOOL m_startServer =false;
 	afx_msg void OnBnClickedSendBtn();
 	int updataListBox(const CString& strSendMsg, const CString& strNameUser);
+	afx_msg void OnBnClickedClearmsgBtn();
 };

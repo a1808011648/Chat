@@ -18,18 +18,15 @@ void CChatSocket::OnReceive(int nErrorCode) {
 	CMFCchatServerDlg* dlg = (CMFCchatServerDlg*)AfxGetApp()->GetMainWnd();
 
 	//接收数据到BUF
-	char szRecvBuf[200] = { 0 };
-	this->Receive(szRecvBuf, 200);
+	char szRecvBuf[SEND_MAX_BUF] = { 0 };
+	this->Receive(szRecvBuf, SEND_MAX_BUF);
 	TRACE("#####Server szRecvBuf:%s",szRecvBuf);
 
 	//更新界面
 	USES_CONVERSION;
 	CString strRecvMsg = A2W(szRecvBuf);
-	dlg->updataListBox(strRecvMsg, _T("客户端："));
-
-
+	dlg->updataListBox(strRecvMsg, _T(""));
 	CAsyncSocket::OnReceive(nErrorCode);
 
-	 
 
 }
