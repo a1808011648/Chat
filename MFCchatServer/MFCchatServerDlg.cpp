@@ -60,6 +60,7 @@ void CMFCchatServerDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_MSG_LIST, m_list);
+	DDX_Control(pDX, IDC_COLOR_COMBO, m_CwordColorCombo);
 }
 
 BEGIN_MESSAGE_MAP(CMFCchatServerDlg, CDialogEx)
@@ -69,6 +70,11 @@ BEGIN_MESSAGE_MAP(CMFCchatServerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_START_BTN, &CMFCchatServerDlg::OnBnClickedStartBtn)
 	ON_BN_CLICKED(IDC_SEND_BTN, &CMFCchatServerDlg::OnBnClickedSendBtn)
 	ON_BN_CLICKED(IDC_CLEARMSG_BTN, &CMFCchatServerDlg::OnBnClickedClearmsgBtn)
+	ON_BN_CLICKED(IDC_STOP_BTN, &CMFCchatServerDlg::OnBnClickedStopBtn)
+	ON_WM_CTLCOLOR()
+	ON_BN_CLICKED(IDC_CALC_BTN, &CMFCchatServerDlg::OnBnClickedCalcBtn)
+	ON_BN_CLICKED(IDC_MAIL_BTN, &CMFCchatServerDlg::OnBnClickedMailBtn)
+	ON_BN_CLICKED(IDC_QQ_BTN, &CMFCchatServerDlg::OnBnClickedQqBtn)
 END_MESSAGE_MAP()
 
 
@@ -105,6 +111,15 @@ BOOL CMFCchatServerDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	GetDlgItem(IDC_PORT_EDIT)->SetWindowText(_T("5038"));
+
+	m_CwordColorCombo.AddString(_T("黑色"));
+	m_CwordColorCombo.AddString(_T("红色"));
+	m_CwordColorCombo.AddString(_T("蓝色"));
+	m_CwordColorCombo.AddString(_T("绿色"));
+	m_CwordColorCombo.SetCurSel(0);
+	SetDlgItemText(IDC_COLOR_COMBO, _T("黑色"));
+
+
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -146,6 +161,9 @@ void CMFCchatServerDlg::OnPaint()
 	}
 	else
 	{
+		CPaintDC dc(this);// 用于绘制的设备上下文
+
+
 		CDialogEx::OnPaint();
 	}
 }
@@ -215,6 +233,8 @@ void CMFCchatServerDlg::OnBnClickedStartBtn()
 	m_list.AddString(str);
 
 	m_startServer = true;
+	GetDlgItem(IDC_START_BTN)->EnableWindow(false);
+
 	
 
 }
@@ -263,4 +283,73 @@ void CMFCchatServerDlg::OnBnClickedClearmsgBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	m_list.ResetContent();
+}
+
+
+void CMFCchatServerDlg::OnBnClickedStopBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (m_server == NULL) {
+		return;
+	}
+	m_server->Close();
+
+	delete m_server;
+	delete m_chat;
+	m_server = NULL;
+	m_chat = NULL;
+	m_startServer = false;
+	GetDlgItem(IDC_START_BTN)->EnableWindow(true);
+	updataListBox(_T("服务器已停止..."), _T(""));
+
+}
+
+
+HBRUSH CMFCchatServerDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+
+	CString strColor;
+	m_CwordColorCombo.GetWindowText(strColor);
+
+	if (IDC_SENDMSG_EDIT == pWnd->GetDlgCtrlID() || IDC_MSG_LIST == pWnd->GetDlgCtrlID()) {
+
+		if (strColor == _T("黑色")) {
+			pDC->SetTextColor(RGB(0, 0, 0));
+		}
+		else if (strColor == _T("红色")) {
+			pDC->SetTextColor(RGB(255, 0, 0));
+		}
+		else if (strColor == _T("绿色")) {
+			pDC->SetTextColor(RGB(0, 255, 0));
+		}
+		else if (strColor == _T("蓝色")) {
+			pDC->SetTextColor(RGB(0, 0, 255));
+		}
+
+	}
+	return hbr;
+}
+
+
+void CMFCchatServerDlg::OnBnClickedCalcBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ShellExecute(NULL, _T("open"), _T("calc.exe"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CMFCchatServerDlg::OnBnClickedMailBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
+	ShellExecute(NULL, _T("open"), _T("https://mail.qq.com/"), NULL, NULL, SW_SHOWNORMAL);
+}
+
+
+void CMFCchatServerDlg::OnBnClickedQqBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+
+	ShellExecute(NULL, _T("open"), _T("E:\\QQ聊天软件\\Bin\\QQScLauncher.exe"), NULL, NULL, SW_SHOWNORMAL);
 }

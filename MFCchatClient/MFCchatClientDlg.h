@@ -49,4 +49,8 @@ public:
 	CButton m_autoSendRadio;
 	afx_msg void OnBnClickedAutosendRadio();
 	afx_msg void OnBnClickedClearmsgBtn();
+	afx_msg void OnBnClickedDisconnectBtn();
+	CComboBox m_CwordColorCombo;
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

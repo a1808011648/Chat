@@ -9,6 +9,7 @@ public:
     CChatSocket();
     virtual ~CChatSocket();
     virtual void OnReceive(int nErrorCode);
+    virtual void OnClose(int nErrorCode);
 
 };
 

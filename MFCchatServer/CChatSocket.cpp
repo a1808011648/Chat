@@ -30,3 +30,8 @@ void CChatSocket::OnReceive(int nErrorCode) {
 
 
 }
+
+void CChatSocket::OnClose(int nErrorCode)
+{
+	CAsyncSocket::OnClose(nErrorCode);
+}

@@ -26,6 +26,8 @@ void CMySocket::OnConnect(int nErrorCode)
 	else {
 		dlg->updataListBox(_T("连接服务器成功"), _T(""));
 		dlg->m_isConnect = true;
+		dlg->GetDlgItem(IDC_CONNECT_BTN)->EnableWindow(false);
+
 	}
 	
 	CAsyncSocket::OnConnect(nErrorCode);

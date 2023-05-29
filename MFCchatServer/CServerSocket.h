@@ -9,6 +9,7 @@ public:
     CServerSocket();
     virtual ~CServerSocket();
     virtual void OnAccept(int nErrorCode);
+    virtual void CServerSocket::OnClose(int nErrorCode);
  
 };
 

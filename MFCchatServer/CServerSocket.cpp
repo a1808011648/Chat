@@ -22,3 +22,9 @@ void CServerSocket::OnAccept(int nErrorCode) {
 
 	CAsyncSocket::OnAccept(nErrorCode);
 }
+
+void CServerSocket::OnClose(int nErrorCode)
+{
+
+	CAsyncSocket::OnClose(nErrorCode);
+}

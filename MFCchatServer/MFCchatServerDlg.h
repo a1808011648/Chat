@@ -46,4 +46,10 @@ public:
 	afx_msg void OnBnClickedSendBtn();
 	int updataListBox(const CString& strSendMsg, const CString& strNameUser);
 	afx_msg void OnBnClickedClearmsgBtn();
+	afx_msg void OnBnClickedStopBtn();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	CComboBox m_CwordColorCombo;
+	afx_msg void OnBnClickedCalcBtn();
+	afx_msg void OnBnClickedMailBtn();
+	afx_msg void OnBnClickedQqBtn();
 };

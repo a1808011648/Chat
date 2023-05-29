@@ -62,6 +62,7 @@ void CMFCchatClientDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_BEFOREMSG_LIST, m_list);
 	DDX_Control(pDX, IDC_SENDMSG_EDIT, m_input);
 	DDX_Control(pDX, IDC_AUTOSEND_RADIO, m_autoSendRadio);
+	DDX_Control(pDX, IDC_COLOR_COMBO, m_CwordColorCombo);
 }
 
 BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
@@ -73,6 +74,8 @@ BEGIN_MESSAGE_MAP(CMFCchatClientDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_SAVENAME_BTN, &CMFCchatClientDlg::OnBnClickedSavenameBtn)
 	ON_BN_CLICKED(IDC_AUTOSEND_RADIO, &CMFCchatClientDlg::OnBnClickedAutosendRadio)
 	ON_BN_CLICKED(IDC_CLEARMSG_BTN, &CMFCchatClientDlg::OnBnClickedClearmsgBtn)
+	ON_BN_CLICKED(IDC_DISCONNECT_BTN, &CMFCchatClientDlg::OnBnClickedDisconnectBtn)
+	ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 
@@ -139,8 +142,12 @@ BOOL CMFCchatClientDlg::OnInitDialog()
 		SetDlgItemText(IDC_NAME_EDIT, wSzName);
 	}
 
-		
-	
+	m_CwordColorCombo.AddString(_T("黑色"));
+	m_CwordColorCombo.AddString(_T("红色"));
+	m_CwordColorCombo.AddString(_T("蓝色"));
+	m_CwordColorCombo.AddString(_T("绿色"));
+	m_CwordColorCombo.SetCurSel(0);
+	SetDlgItemText(IDC_COLOR_COMBO, _T("黑色"));
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -183,6 +190,7 @@ void CMFCchatClientDlg::OnPaint()
 	}
 	else
 	{
+		
 		CDialogEx::OnPaint();
 	}
 }
@@ -383,4 +391,78 @@ void CMFCchatClientDlg::OnBnClickedClearmsgBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	m_list.ResetContent();
+}
+
+
+void CMFCchatClientDlg::OnBnClickedDisconnectBtn()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (m_client == NULL) {
+
+		return;
+	}
+	m_client->Close();
+	delete m_client;
+	m_client = NULL;
+	m_isConnect = false;
+	GetDlgItem(IDC_CONNECT_BTN)->EnableWindow(true);
+	updataListBox(_T("服务器已断开..."), _T(""));
+}
+
+
+HBRUSH CMFCchatClientDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	HBRUSH hbr = CDialogEx::OnCtlColor(pDC, pWnd, nCtlColor);
+	CString strColor;
+	m_CwordColorCombo.GetWindowText(strColor);
+
+	if (IDC_SENDMSG_EDIT == pWnd->GetDlgCtrlID() || IDC_BEFOREMSG_LIST == pWnd->GetDlgCtrlID()) {
+
+		if (strColor == _T("黑色")) {
+			pDC->SetTextColor(RGB(0, 0, 0));
+		}
+		else if (strColor == _T("红色")) {
+			pDC->SetTextColor(RGB(255, 0, 0));
+		}
+		else if (strColor == _T("绿色")) {
+			pDC->SetTextColor(RGB(0, 255, 0));
+		}
+		else if (strColor == _T("蓝色")) {
+			pDC->SetTextColor(RGB(0, 0, 255));
+		}
+
+	}
+
+	return hbr;
+}
+
+
+BOOL CMFCchatClientDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+	//如果消息等于键盘某键被按下，并且，是回车键那么不做处理
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN) {
+
+		TRACE(_T("chat---回车"));
+		return true;
+	}
+
+	//添加快捷键按下CTRL+X退出程序
+	if (pMsg->message == WM_KEYDOWN) {
+
+		if (GetKeyState(VK_CONTROL) < 0) {
+			TRACE(_T("chat---CTRL"));
+
+			if (pMsg->wParam == 'X') {
+
+				TRACE(_T("chat---X"));
+				CDialogEx::OnOK();
+			}
+
+		}
+
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
 }
