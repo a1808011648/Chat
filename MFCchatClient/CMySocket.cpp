@@ -17,7 +17,7 @@ void CMySocket::OnConnect(int nErrorCode)
 	//得到主窗口
 	CMFCchatClientDlg* dlg = (CMFCchatClientDlg*)AfxGetApp()->GetMainWnd();
 
-	
+	int a = 0;
 	//判断是否链接成功
 	if (nErrorCode != 0) {
 		dlg->updataListBox(_T("连接服务器失败"), _T(""));
